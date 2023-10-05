@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ServicoRepository implements Repository<Servico, Long>{
 
     private static final AtomicReference<ServicoRepository> instance = new AtomicReference<>();
-    private EntityManager manager;
+    private final EntityManager manager;
 
     private ServicoRepository(EntityManager manager) {
         this.manager = manager;
@@ -32,31 +32,49 @@ public class ServicoRepository implements Repository<Servico, Long>{
 
     @Override
     public List<Servico> findAll() {
-        return null;
+        String jpql = "FROM Servico";
+
+        return manager.createQuery(jpql, Servico.class).getResultList();
     }
 
     @Override
     public Servico findById(Long id) {
-        return null;
+        return manager.find(Servico.class, id);
     }
 
     @Override
     public List<Servico> findByTexto(String texto) {
-        return null;
+        String jpql = "SELECT s FROM Servico s WHERE LOWER(s.TP_SERVICO) LIKE CONCAT('%',LOWER(:servico) ,'%')";
+
+        return manager.createQuery(jpql, Servico.class)
+            .setParameter("servico", texto)
+            .getResultList();
     }
 
     @Override
     public Servico persist(Servico servico) {
-        return null;
+        manager.getTransaction().begin();
+        manager.persist(servico);
+        manager.getTransaction().commit();
+
+        return servico;
     }
 
     @Override
     public Servico update(Servico servico) {
-        return null;
+        manager.getTransaction().begin();
+        manager.merge(servico);
+        manager.getTransaction().commit();
+
+        return servico;
     }
 
     @Override
     public boolean delete(Servico servico) {
-        return false;
+        manager.getTransaction().begin();
+        manager.remove(servico);
+        manager.getTransaction().commit();
+
+        return true;
     }
 }

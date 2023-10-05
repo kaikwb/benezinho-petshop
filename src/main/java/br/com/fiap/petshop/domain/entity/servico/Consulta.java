@@ -1,10 +1,12 @@
 package br.com.fiap.petshop.domain.entity.servico;
 
 import br.com.fiap.petshop.domain.entity.animal.Animal;
+import jakarta.persistence.DiscriminatorValue;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@DiscriminatorValue("CONSULTA")
 public class Consulta extends Servico {
     public Consulta() {
     }

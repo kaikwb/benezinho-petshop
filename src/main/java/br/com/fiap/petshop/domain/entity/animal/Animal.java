@@ -3,6 +3,7 @@ package br.com.fiap.petshop.domain.entity.animal;
 import br.com.fiap.petshop.domain.entity.Sexo;
 import br.com.fiap.petshop.domain.entity.servico.Servico;
 import br.com.fiap.petshop.infra.security.entity.Pessoa;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -10,17 +11,52 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Entity
+@Table(name = "TB_ANIMAL")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "TP_ANIMAL", discriminatorType = DiscriminatorType.STRING)
 public abstract class Animal {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SQ_ANIMAL")
+    @SequenceGenerator(name = "SQ_ANIMAL", sequenceName = "SQ_ANIMAL")
+    @Column(name = "ID_ANIMAL")
     private Long id;
+
+    @Column(name = "NM_ANIMAL")
     private String nome;
+
+    @Enumerated(EnumType.STRING)
     private Sexo sexo;
+
+    @Column(name = "DT_NASCIMENTO")
     private LocalDate nascimento;
+
+    @Column(name = "DS_RACA")
     private String raca;
+
+    @Column(name = "DS_DESCRICAO")
     private String descricao;
+
+    @Column(name = "DS_OBSERVACAO")
     private String observacao;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(
+        name = "ID_DONO",
+        referencedColumnName = "ID_PESSOA",
+        foreignKey = @ForeignKey(name = "FK_ANIMAL_PESSOA")
+    )
     private Pessoa dono;
 
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "TB_ANIMAL_SERVICO",
+        joinColumns = @JoinColumn(name = "ID_ANIMAL", referencedColumnName = "ID_ANIMAL"),
+        inverseJoinColumns = @JoinColumn(name = "ID_SERVICO", referencedColumnName = "ID_SERVICO"),
+        foreignKey = @ForeignKey(name = "FK_ANIMAL_SERVICO"),
+        inverseForeignKey = @ForeignKey(name = "FK_SERVICO_ANIMAL")
+    )
     private Set<Servico> servicos = new LinkedHashSet<>();
 
     public Animal() {
@@ -35,24 +71,24 @@ public abstract class Animal {
         this.descricao = descricao;
         this.observacao = observacao;
         this.dono = dono;
-        this.servicos = Objects.nonNull( servicos ) ? servicos : new LinkedHashSet<>();
+        this.servicos = Objects.nonNull(servicos) ? servicos : new LinkedHashSet<>();
     }
 
     public Animal adicionaServico(Servico s) {
-        this.servicos.add( s );
-        s.setAnimal( this );
+        this.servicos.add(s);
+        s.setAnimal(this);
         return this;
     }
 
     public Animal removeaServico(Servico s) {
-        this.servicos.remove( s );
-        if (s.getAnimal().equals( this )) s.setAnimal( null );
+        this.servicos.remove(s);
+        if (s.getAnimal().equals(this)) s.setAnimal(null);
         return this;
     }
 
 
     public Set<Servico> getServicos() {
-        return Collections.unmodifiableSet( servicos );
+        return Collections.unmodifiableSet(servicos);
     }
 
     public Long getId() {
@@ -131,14 +167,14 @@ public abstract class Animal {
     @Override
     public String toString() {
         return "Animal{" +
-                "id=" + id +
-                ", nome='" + nome + '\'' +
-                ", sexo=" + sexo +
-                ", nascimento=" + nascimento +
-                ", raca='" + raca + '\'' +
-                ", descricao='" + descricao + '\'' +
-                ", observacao='" + observacao + '\'' +
-                ", dono=" + dono +
-                '}';
+            "id=" + id +
+            ", nome='" + nome + '\'' +
+            ", sexo=" + sexo +
+            ", nascimento=" + nascimento +
+            ", raca='" + raca + '\'' +
+            ", descricao='" + descricao + '\'' +
+            ", observacao='" + observacao + '\'' +
+            ", dono=" + dono +
+            '}';
     }
 }
